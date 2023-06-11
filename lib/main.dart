@@ -1,13 +1,30 @@
+// ignore_for_file: avoid_print
+
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fit_app/firebase_options.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 final _googleSignIn = GoogleSignIn(
   scopes: [
-    'https://www.googleapis.com/auth/drive',
+    'email',
+    'https://www.googleapis.com/auth/contacts.readonly',
+    'https://www.googleapis.com/auth/fitness.activity.read',
+    'https://www.googleapis.com/auth/fitness.blood_glucose.read',
+    'https://www.googleapis.com/auth/fitness.blood_pressure.read',
+    'https://www.googleapis.com/auth/fitness.body.read',
+    'https://www.googleapis.com/auth/fitness.body_temperature.read',
+    'https://www.googleapis.com/auth/fitness.heart_rate.read',
+    'https://www.googleapis.com/auth/fitness.nutrition.read',
+    'https://www.googleapis.com/auth/fitness.oxygen_saturation.read',
+    'https://www.googleapis.com/auth/fitness.reproductive_health.read',
+    'https://www.googleapis.com/auth/fitness.sleep.read',
   ],
 );
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
@@ -33,13 +50,17 @@ class MyHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Google Fit App'),
+        title: const Text('Google Fit App 2'),
       ),
       body: Center(
         child: ElevatedButton(
           child: const Text('Sign In with Google'),
           onPressed: () {
-            _signInWithGoogle();
+            try {
+              _signInWithGoogle();
+            } catch (error) {
+              print('Ошибка подключения');
+            }
           },
         ),
       ),
@@ -49,6 +70,7 @@ class MyHomePage extends StatelessWidget {
   Future<void> _signInWithGoogle() async {
     try {
       await _googleSignIn.signIn();
+      print(_googleSignIn.currentUser?.displayName);
     } catch (error) {
       print('Ошибка аутентификации: $error');
     }

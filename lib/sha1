@@ -1,0 +1,59 @@
+> Task :app:signingReport
+Variant: debug
+Config: debug
+Store: C:\Users\redin\.android\debug.keystore
+Alias: AndroidDebugKey
+MD5: 35:39:A4:B8:76:CE:74:F2:2E:BA:0D:26:3A:EF:00:01
+SHA1: 21:4D:3B:B0:DC:3A:55:D1:FC:50:27:8D:51:A0:6E:46:8B:C1:60:EA
+SHA-256: B6:99:57:D4:70:41:04:42:E1:50:76:B3:95:EE:38:9C:E0:C4:11:24:EF:77:2F:E9:4F:A4:98:61:2B:74:E5:3B
+Valid until: ╤З╨╡╤В╨▓╨╡╤А╨│, 25 ╨╝╨░╤П 2051 ╨│.
+----------
+Variant: release
+Config: debug
+Store: C:\Users\redin\.android\debug.keystore
+Alias: AndroidDebugKey
+MD5: 35:39:A4:B8:76:CE:74:F2:2E:BA:0D:26:3A:EF:00:01
+SHA1: 21:4D:3B:B0:DC:3A:55:D1:FC:50:27:8D:51:A0:6E:46:8B:C1:60:EA
+SHA-256: B6:99:57:D4:70:41:04:42:E1:50:76:B3:95:EE:38:9C:E0:C4:11:24:EF:77:2F:E9:4F:A4:98:61:2B:74:E5:3B
+Valid until: ╤З╨╡╤В╨▓╨╡╤А╨│, 25 ╨╝╨░╤П 2051 ╨│.
+----------
+Variant: profile
+Config: debug
+Store: C:\Users\redin\.android\debug.keystore
+Alias: AndroidDebugKey
+MD5: 35:39:A4:B8:76:CE:74:F2:2E:BA:0D:26:3A:EF:00:01
+SHA1: 21:4D:3B:B0:DC:3A:55:D1:FC:50:27:8D:51:A0:6E:46:8B:C1:60:EA
+SHA-256: B6:99:57:D4:70:41:04:42:E1:50:76:B3:95:EE:38:9C:E0:C4:11:24:EF:77:2F:E9:4F:A4:98:61:2B:74:E5:3B
+Valid until: ╤З╨╡╤В╨▓╨╡╤А╨│, 25 ╨╝╨░╤П 2051 ╨│.
+----------
+Variant: debugAndroidTest
+Config: debug
+Store: C:\Users\redin\.android\debug.keystore
+Alias: AndroidDebugKey
+MD5: 35:39:A4:B8:76:CE:74:F2:2E:BA:0D:26:3A:EF:00:01
+SHA1: 21:4D:3B:B0:DC:3A:55:D1:FC:50:27:8D:51:A0:6E:46:8B:C1:60:EA
+SHA-256: B6:99:57:D4:70:41:04:42:E1:50:76:B3:95:EE:38:9C:E0:C4:11:24:EF:77:2F:E9:4F:A4:98:61:2B:74:E5:3B
+Valid until: ╤З╨╡╤В╨▓╨╡╤А╨│, 25 ╨╝╨░╤П 2051 ╨│.
+----------
+
+> Task :firebase_core:signingReport
+Variant: debugAndroidTest
+Config: debug
+Store: C:\Users\redin\.android\debug.keystore
+Alias: AndroidDebugKey
+MD5: 35:39:A4:B8:76:CE:74:F2:2E:BA:0D:26:3A:EF:00:01
+SHA1: 21:4D:3B:B0:DC:3A:55:D1:FC:50:27:8D:51:A0:6E:46:8B:C1:60:EA
+SHA-256: B6:99:57:D4:70:41:04:42:E1:50:76:B3:95:EE:38:9C:E0:C4:11:24:EF:77:2F:E9:4F:A4:98:61:2B:74:E5:3B
+Valid until: ╤З╨╡╤В╨▓╨╡╤А╨│, 25 ╨╝╨░╤П 2051 ╨│.
+----------
+
+> Task :google_sign_in_android:signingReport
+Variant: debugAndroidTest
+Config: debug
+Store: C:\Users\redin\.android\debug.keystore
+Alias: AndroidDebugKey
+MD5: 35:39:A4:B8:76:CE:74:F2:2E:BA:0D:26:3A:EF:00:01
+SHA1: 21:4D:3B:B0:DC:3A:55:D1:FC:50:27:8D:51:A0:6E:46:8B:C1:60:EA
+SHA-256: B6:99:57:D4:70:41:04:42:E1:50:76:B3:95:EE:38:9C:E0:C4:11:24:EF:77:2F:E9:4F:A4:98:61:2B:74:E5:3B
+Valid until: ╤З╨╡╤В╨▓╨╡╤А╨│, 25 ╨╝╨░╤П 2051 ╨│.
+----------
