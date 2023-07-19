@@ -50,23 +50,15 @@ class MainActivity: FlutterActivity() {
             .readData(readRequest)
             .addOnSuccessListener({ response ->
                 for (dataSet in response.dataSets) {
-                    // Получение метаданных типа данных (DataType)
                     val dataType = dataSet.dataType
                     val dataTypeName = dataType.name
         
-                    // Вывод имени типа данных в консоль
                     Log.i(TAG, "Data Type Name: $dataTypeName")
         
-                    // Получение значения из каждого DataSet и DataPoint
                     for (dataPoint in dataSet.dataPoints) {
-                        // Получение списка полей в DataPoint
                         val fields = dataPoint.dataType.fields
-        
-                        // Проходимся по списку полей и получаем их значения
                         for (field in fields) {
                             val value = dataPoint.getValue(field)
-        
-                            // Вывод значения в консоль
                             Log.i(TAG, "${field.name}: $value")
                         }
                     }
