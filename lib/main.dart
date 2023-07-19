@@ -1,78 +1,101 @@
 // ignore_for_file: avoid_print
-
+// ignore_for_file: unused_import
+import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fit_app/firebase_options.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:googleapis/customsearch/v1.dart';
 
 final _googleSignIn = GoogleSignIn(
   scopes: [
     'email',
-    'https://www.googleapis.com/auth/contacts.readonly',
-    'https://www.googleapis.com/auth/fitness.activity.read',
-    'https://www.googleapis.com/auth/fitness.blood_glucose.read',
-    'https://www.googleapis.com/auth/fitness.blood_pressure.read',
-    'https://www.googleapis.com/auth/fitness.body.read',
-    'https://www.googleapis.com/auth/fitness.body_temperature.read',
-    'https://www.googleapis.com/auth/fitness.heart_rate.read',
-    'https://www.googleapis.com/auth/fitness.nutrition.read',
-    'https://www.googleapis.com/auth/fitness.oxygen_saturation.read',
-    'https://www.googleapis.com/auth/fitness.reproductive_health.read',
-    'https://www.googleapis.com/auth/fitness.sleep.read',
   ],
 );
-
+late bool _isAuth;
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const MyApp());
+  // WidgetsFlutterBinding.ensureInitialized();
+  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Google Fit App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(),
+    return const MaterialApp(
+      title: 'My App',
+      home: MyHomePage(),
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
+  @override
+  State<MyHomePage> createState() => _MyHomePage();
+}
+
+class _MyHomePage extends State<MyHomePage> {
+  static const channelRequest = MethodChannel('flutter.fit.requests');
+  bool _isAuth = false;
+
+  @override
+  void initState() {
+    super.initState();
+    checkUserLoggedIn();
+  }
+
+  void checkUserLoggedIn() async {
+    bool isSignedIn = await _googleSignIn.isSignedIn();
+    print(isSignedIn);
+    setState(() {
+      _isAuth = isSignedIn;
+    });
+  }
+
+  Future<void> _getHealthData() async {
+    if (_isAuth) {
+      await channelRequest.invokeMethod('getHealthData');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Google Fit App 2'),
-      ),
-      body: Center(
-        child: ElevatedButton(
-          child: const Text('Sign In with Google'),
-          onPressed: () {
-            try {
-              _signInWithGoogle();
-            } catch (error) {
-              print('Ошибка подключения');
-            }
-          },
-        ),
+    return Material(
+      child: Center(
+        child: _isAuth
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: _getHealthData,
+                    child: const Text('Get health data'),
+                  ),
+                  ElevatedButton(
+                      child: const Text('SignOut'),
+                      onPressed: () {
+                        try {
+                          _googleSignIn.signOut();
+                          checkUserLoggedIn();
+                        } catch (e) {
+                          print('ошибка выхода');
+                        }
+                      }),
+                ],
+              )
+            : ElevatedButton(
+                child: const Text('SignIn'),
+                onPressed: () async {
+                  try {
+                    await _googleSignIn.signIn();
+                    checkUserLoggedIn();
+                  } catch (error) {
+                    print('ошибка входа');
+                  }
+                },
+              ),
       ),
     );
-  }
-
-  Future<void> _signInWithGoogle() async {
-    try {
-      await _googleSignIn.signIn();
-      print(_googleSignIn.currentUser?.displayName);
-    } catch (error) {
-      print('Ошибка аутентификации: $error');
-    }
   }
 }

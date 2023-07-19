@@ -8,27 +8,19 @@ version: 1.0.0+1
 environment:
   sdk: '>=3.0.0-406.0.dev <4.0.0'
 
-
 dependencies:
   flutter:
     sdk: flutter
   google_sign_in: ^6.1.4
   googleapis: ^11.2.0
   googleapis_auth: ^1.4.1
-
-
-
   cupertino_icons: ^1.0.2
   firebase_core: ^2.13.1
 
-dev_dependencies:
+dev_dependencies: 
   flutter_test:
     sdk: flutter
-
-
   flutter_lints: ^2.0.0
-
-
 
 flutter:
   uses-material-design: true
