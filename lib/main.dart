@@ -1,26 +1,29 @@
-// ignore_for_file: avoid_print
-// ignore_for_file: unused_import
 import 'dart:async';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fit_app/firebase_options.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:googleapis/customsearch/v1.dart';
 
 final _googleSignIn = GoogleSignIn(
   scopes: [
     'email',
+    'https://www.googleapis.com/auth/contacts.readonly',
+    'https://www.googleapis.com/auth/fitness.activity.read',
+    'https://www.googleapis.com/auth/fitness.blood_glucose.read',
+    'https://www.googleapis.com/auth/fitness.blood_pressure.read',
+    'https://www.googleapis.com/auth/fitness.body.read',
+    'https://www.googleapis.com/auth/fitness.body_temperature.read',
+    'https://www.googleapis.com/auth/fitness.heart_rate.read',
+    'https://www.googleapis.com/auth/fitness.nutrition.read',
+    'https://www.googleapis.com/auth/fitness.oxygen_saturation.read',
   ],
 );
 late bool _isAuth;
 Future<void> main() async {
-  // WidgetsFlutterBinding.ensureInitialized();
-  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
@@ -39,6 +42,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePage extends State<MyHomePage> {
   static const channelRequest = MethodChannel('flutter.fit.requests');
   bool _isAuth = false;
+  var text = 'пока пусто';
 
   @override
   void initState() {
@@ -48,7 +52,6 @@ class _MyHomePage extends State<MyHomePage> {
 
   void checkUserLoggedIn() async {
     bool isSignedIn = await _googleSignIn.isSignedIn();
-    print(isSignedIn);
     setState(() {
       _isAuth = isSignedIn;
     });
@@ -56,7 +59,10 @@ class _MyHomePage extends State<MyHomePage> {
 
   Future<void> _getHealthData() async {
     if (_isAuth) {
-      await channelRequest.invokeMethod('getHealthData');
+      var t = await channelRequest.invokeMethod('getHealthData');
+      setState(() {
+        text = t;
+      });
     }
   }
 
@@ -72,27 +78,20 @@ class _MyHomePage extends State<MyHomePage> {
                     onPressed: _getHealthData,
                     child: const Text('Get health data'),
                   ),
+                  Text(text),
                   ElevatedButton(
                       child: const Text('SignOut'),
                       onPressed: () {
-                        try {
-                          _googleSignIn.signOut();
-                          checkUserLoggedIn();
-                        } catch (e) {
-                          print('ошибка выхода');
-                        }
+                        _googleSignIn.signOut();
+                        checkUserLoggedIn();
                       }),
                 ],
               )
             : ElevatedButton(
                 child: const Text('SignIn'),
                 onPressed: () async {
-                  try {
-                    await _googleSignIn.signIn();
-                    checkUserLoggedIn();
-                  } catch (error) {
-                    print('ошибка входа');
-                  }
+                  await _googleSignIn.signIn();
+                  checkUserLoggedIn();
                 },
               ),
       ),

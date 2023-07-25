@@ -11,8 +11,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  google_sign_in: ^6.1.4
   googleapis: ^11.2.0
+  google_sign_in: ^6.1.4
   googleapis_auth: ^1.4.1
   cupertino_icons: ^1.0.2
   firebase_core: ^2.13.1
