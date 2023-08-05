@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -7,17 +8,18 @@ final _googleSignIn = GoogleSignIn(
   scopes: [
     'email',
     'https://www.googleapis.com/auth/contacts.readonly',
-    'https://www.googleapis.com/auth/fitness.activity.read',
     'https://www.googleapis.com/auth/fitness.blood_glucose.read',
     'https://www.googleapis.com/auth/fitness.blood_pressure.read',
     'https://www.googleapis.com/auth/fitness.body.read',
     'https://www.googleapis.com/auth/fitness.body_temperature.read',
     'https://www.googleapis.com/auth/fitness.heart_rate.read',
+    'https://www.googleapis.com/auth/fitness.location.read',
     'https://www.googleapis.com/auth/fitness.nutrition.read',
     'https://www.googleapis.com/auth/fitness.oxygen_saturation.read',
+    'https://www.googleapis.com/auth/fitness.reproductive_health.read',
+    'https://www.googleapis.com/auth/fitness.sleep.read',
   ],
 );
-late bool _isAuth;
 Future<void> main() async {
   runApp(const MyApp());
 }
@@ -42,7 +44,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePage extends State<MyHomePage> {
   static const channelRequest = MethodChannel('flutter.fit.requests');
   bool _isAuth = false;
-  var text = 'пока пусто';
+  var text = 'NO DATA';
 
   @override
   void initState() {
@@ -58,12 +60,22 @@ class _MyHomePage extends State<MyHomePage> {
   }
 
   Future<void> _getHealthData() async {
-    if (_isAuth) {
-      var t = await channelRequest.invokeMethod('getHealthData');
-      setState(() {
-        text = t;
-      });
+    if (!_isAuth) return;
+    final response = await channelRequest.invokeMethod('getHealthData');
+    final Map<String, dynamic> json = jsonDecode(response);
+    var message = ''; //выгядит как говнокод
+    for (final dataSet in json.entries) {
+      for (final points in dataSet.value) {
+        for (final point in points.entries) {
+          for (final field in point.value.entries) {
+            message += '${field.key}: ${field.value}\n';
+          }
+        }
+      }
     }
+    setState(() {
+      text = message;
+    });
   }
 
   @override
@@ -81,8 +93,8 @@ class _MyHomePage extends State<MyHomePage> {
                   Text(text),
                   ElevatedButton(
                       child: const Text('SignOut'),
-                      onPressed: () {
-                        _googleSignIn.signOut();
+                      onPressed: () async {
+                        await _googleSignIn.signOut();
                         checkUserLoggedIn();
                       }),
                 ],
