@@ -6,9 +6,10 @@ import android.util.AndroidException
 import android.util.Log
 import androidx.core.content.ContextCompat.*
 import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.permission.HealthPermission
-import androidx.health.connect.client.records.StepsRecord
-import androidx.health.connect.client.request.ReadRecordsRequest
+import androidx.health.connect.client.records.*
+import androidx.health.connect.client.request.*
 import androidx.health.connect.client.time.TimeRangeFilter
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -16,6 +17,11 @@ import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.*
 import java.time.Instant
 import kotlin.random.Random
+import kotlin.reflect.KClass
+import kotlin.reflect.full.companionObject
+import kotlin.reflect.full.isSubtypeOf
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.full.starProjectedType
 
 
 data class DataPoint (val point :MutableMap<String, Any>)
@@ -23,12 +29,36 @@ data class DataPoint (val point :MutableMap<String, Any>)
 class MainActivity: FlutterActivity() {
     private val TAG = "MESSAGE OF APP"
     private val CHANNEL_FIT = "flutter.fit.requests"
-    // Create a set of permission strings for required data types
-    val PERMISSIONS =
-        setOf(
-            HealthPermission.getReadPermission(StepsRecord::class),
-            HealthPermission.getWritePermission(StepsRecord::class)
+    val CLASSES_PERMISSIONS: Set<KClass<out Record>> = setOf(
+        ActiveCaloriesBurnedRecord::class,
+        BasalMetabolicRateRecord::class,
+        BodyTemperatureRecord::class,
+        DistanceRecord::class,
+        ElevationGainedRecord::class,
+        ExerciseSessionRecord::class,
+        FloorsClimbedRecord::class,
+        HeartRateRecord::class,
+        HeightRecord::class,
+        NutritionRecord::class,
+        RestingHeartRateRecord::class,
+        SexualActivityRecord::class,
+        SleepSessionRecord::class,
+        StepsCadenceRecord::class,
+        StepsRecord::class,
+        TotalCaloriesBurnedRecord::class,
+        WheelchairPushesRecord::class
+    )
+
+
+    val PERMISSIONS = CLASSES_PERMISSIONS.flatMap { permission ->
+        listOf(
+            HealthPermission.getReadPermission(permission),
+            HealthPermission.getWritePermission(permission)
         )
+    }.toSet()
+
+
+
     @androidx.annotation.RequiresApi(android.os.Build.VERSION_CODES.Q)
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -65,22 +95,18 @@ class MainActivity: FlutterActivity() {
         }
         val healthConnectClient = HealthConnectClient.getOrCreate(context, providerPackageName)
         GlobalScope.launch {
-            Log.i(TAG, "runBlocking")
             checkPermissionsAndRun(healthConnectClient)
         }
         // Поток не приостанавливается так что надо это как то изменить
     }
 
-    suspend fun checkPermissionsAndRun(healthConnectClient: HealthConnectClient) {
-        Log.i(TAG, "checkPermissionsAndRun")
+    private suspend fun checkPermissionsAndRun(healthConnectClient: HealthConnectClient) {
         try {
             val granted = healthConnectClient.permissionController.getGrantedPermissions()
             if (granted.containsAll(PERMISSIONS)) {
-                Log.i(TAG, "РАЗРЕШЕНИЯ ПОЛУЧЕНЫ")
-
                 val endTime = Instant.now()
                 val startTime = endTime.minusSeconds(604800)
-                readStepsByTimeRange(healthConnectClient, startTime, endTime)
+                aggregateSteps(healthConnectClient, startTime, endTime)
             } else {
                 Log.e(TAG, "ОШИБКА С РАЗРЕШЕНИЕМ")
             }
@@ -88,30 +114,70 @@ class MainActivity: FlutterActivity() {
             Log.e(TAG+"ERROR", "$e")
         }
     }
-    suspend fun readStepsByTimeRange(
+
+    private suspend fun aggregateSteps(
         healthConnectClient: HealthConnectClient,
         startTime: Instant,
         endTime: Instant
     ) {
-        Log.i(TAG, "readStepsByTimeRange")
         try {
-            val response =
-                healthConnectClient.readRecords(
-                    ReadRecordsRequest(
-                        StepsRecord::class,
+
+//
+//            for (classPermission in CLASSES_PERMISSIONS) {
+//                val companion = classPermission.companionObject
+//                val companionInstance = companion?.objectInstance
+//                if (companionInstance != null) {
+//                    val properties = companionInstance::class.memberProperties
+//                    val aggregateMetricProperty = properties.firstOrNull()
+//
+//                    if (aggregateMetricProperty != null) {
+//                        val aggregateMetricValue =
+//                            aggregateMetricProperty.getter.call(companionInstance)
+//                            Log.i(TAG, "#$classPermission, $aggregateMetricValue $companionInstance")
+//                        if (aggregateMetricValue != null && aggregateMetricValue is AggregateMetric<*>) {
+//                            setet.add(aggregateMetricValue)
+//                        }
+//                    }
+//                }
+//            }
+
+            val setet = mutableSetOf<Any>()
+            for (classPermission in CLASSES_PERMISSIONS) {
+                val companion = classPermission.companionObject
+                val companionInstance = companion?.objectInstance
+                if (companionInstance != null) {
+                    val properties = companionInstance::class.memberProperties
+
+                    for (property in properties) {
+                        if (property.returnType.isSubtypeOf(AggregateMetric::class.starProjectedType)) {
+                            val aggregateMetricValue = property.getter.call(companionInstance)
+                            if (aggregateMetricValue != null && aggregateMetricValue is AggregateMetric<*>) {
+                                setet.add(aggregateMetricValue)
+                            }
+                        }
+                    }
+                }
+            }
+            //
+            val newset: Set<AggregateMetric<*>> = setet as Set<AggregateMetric<*>>
+                val response = healthConnectClient.aggregate(
+                    AggregateRequest(
+                        // какое же это говно
+                        metrics = newset,
                         timeRangeFilter = TimeRangeFilter.between(startTime, endTime)
                     )
                 )
-            Log.i(TAG, "Start loop")
-            if (response.records.isEmpty()) writeDataSteps(healthConnectClient)
-            for (stepRecord in response.records) {
-                Log.i(TAG, "${stepRecord.count}")
+            for (type in newset) {
+                val stepCount = response[type] ?: "NO DATA"
+                Log.i(TAG, "$stepCount")
             }
         } catch (e: Exception) {
-            Log.e(TAG, "ОШИБКА В readStepsByTimeRange $e")
+            Log.e(TAG, "Function aggregateSteps $e")
         }
     }
-    suspend fun writeDataSteps(healthConnectClient: HealthConnectClient) {
+
+    // Если шагов нет то пишем ее в сервис
+    private suspend fun writeDataSteps(healthConnectClient: HealthConnectClient) {
         try {
             val stepsRecord = StepsRecord(
                 count = Random.nextLong(50, 210),
@@ -124,6 +190,28 @@ class MainActivity: FlutterActivity() {
             Log.i(TAG, "Произошла запись шагов")
         } catch (e: Exception) {
             Log.e(TAG, "Ошибка записи данных: $e")
+        }
+    }
+    // Функция для чтения только шагов
+    private suspend fun readStepsByTimeRange(
+        healthConnectClient: HealthConnectClient,
+        startTime: Instant,
+        endTime: Instant
+    ) {
+        try {
+            val response =
+                healthConnectClient.readRecords(
+                    ReadRecordsRequest(
+                        StepsRecord::class,
+                        timeRangeFilter = TimeRangeFilter.between(startTime, endTime)
+                    )
+                )
+            if (response.records.isEmpty()) writeDataSteps(healthConnectClient)
+            for (stepRecord in response.records) {
+                Log.i(TAG, "${stepRecord.count}")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "ОШИБКА В readStepsByTimeRange $e")
         }
     }
 }
