@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -62,19 +61,9 @@ class _MyHomePage extends State<MyHomePage> {
   Future<void> _getHealthData() async {
     if (!_isAuth) return;
     final response = await channelRequest.invokeMethod('getHealthData');
-    final Map<String, dynamic> json = jsonDecode(response);
-    var message = ''; //выгядит как говнокод
-    for (final dataSet in json.entries) {
-      for (final points in dataSet.value) {
-        for (final point in points.entries) {
-          for (final field in point.value.entries) {
-            message += '${field.key}: ${field.value}\n';
-          }
-        }
-      }
-    }
+    var message = "Await";
     setState(() {
-      text = message;
+      text = response;
     });
   }
 
