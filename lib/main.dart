@@ -20,6 +20,8 @@ final _googleSignIn = GoogleSignIn(
     'https://www.googleapis.com/auth/fitness.sleep.read',
   ],
 );
+const channelRequest = MethodChannel('flutter.fit.requests');
+
 Future<void> main() async {
   runApp(const MyApp());
 }
@@ -40,9 +42,7 @@ class MyHomePage extends StatefulWidget {
   @override
   State<MyHomePage> createState() => _MyHomePage();
 }
-
 class _MyHomePage extends State<MyHomePage> {
-  static const channelRequest = MethodChannel('flutter.fit.requests');
   bool _isAuth = false;
   var text = 'NO DATA';
 
@@ -50,6 +50,15 @@ class _MyHomePage extends State<MyHomePage> {
   void initState() {
     super.initState();
     checkUserLoggedIn();
+    const MethodChannel('flutter.fit.requests').setMethodCallHandler((call) async {
+      if (call.method == 'sendDataToFlutter') {
+        String response = call.arguments;
+        final Map<String, dynamic> json = jsonDecode(response);
+        setState(() {
+          text = parserResultChannel(json);
+        });
+      }
+    });
   }
 
   void checkUserLoggedIn() async {
@@ -58,12 +67,8 @@ class _MyHomePage extends State<MyHomePage> {
       _isAuth = isSignedIn;
     });
   }
-
-  Future<void> _getHealthData() async {
-    if (!_isAuth) return;
-    final response = await channelRequest.invokeMethod('getHealthData');
-    final Map<String, dynamic> json = jsonDecode(response);
-    var message = ''; //выгядит как говнокод
+  String parserResultChannel(var json) {
+    var message = '';
     for (final dataSet in json.entries) {
       for (final points in dataSet.value) {
         for (final point in points.entries) {
@@ -73,9 +78,21 @@ class _MyHomePage extends State<MyHomePage> {
         }
       }
     }
-    setState(() {
-      text = message;
-    });
+    return message;
+  }
+
+  static const _channel =  MethodChannel('flutter.fit.requests');
+  Future<void> _getHealthData() async {
+    if (!_isAuth) return;
+    try {
+      final response = await _channel.invokeMethod('getHealthData');
+      final Map<String, dynamic> json = jsonDecode(response);
+      setState(() {
+        text = parserResultChannel(json);
+      });
+    } catch (e) {
+      print('Error invoking getHealthData: $e');
+    }
   }
 
   @override
