@@ -51,8 +51,6 @@
     <uses-permission android:name="android.permission.health.WRITE_LEAN_BODY_MASS" />
     <uses-permission android:name="android.permission.health.READ_MENSTRUATION" />
     <uses-permission android:name="android.permission.health.WRITE_MENSTRUATION" />
-    <uses-permission android:name="android.permission.health.READ_MENSTRUATION" />
-    <uses-permission android:name="android.permission.health.WRITE_MENSTRUATION" />
     <uses-permission android:name="android.permission.health.READ_NUTRITION" />
     <uses-permission android:name="android.permission.health.WRITE_NUTRITION" />
     <uses-permission android:name="android.permission.health.READ_OVULATION_TEST" />
@@ -67,8 +65,6 @@
     <uses-permission android:name="android.permission.health.WRITE_RESTING_HEART_RATE" />
     <uses-permission android:name="android.permission.health.READ_SEXUAL_ACTIVITY" />
     <uses-permission android:name="android.permission.health.WRITE_SEXUAL_ACTIVITY" />
-    <uses-permission android:name="android.permission.health.READ_SLEEP" />
-    <uses-permission android:name="android.permission.health.WRITE_SLEEP" />
     <uses-permission android:name="android.permission.health.READ_SLEEP" />
     <uses-permission android:name="android.permission.health.WRITE_SLEEP" />
     <uses-permission android:name="android.permission.health.READ_SPEED" />
@@ -89,7 +85,7 @@
 
 
     <application
-        android:label="google_fit_app"
+        android:label="DATA HEALTH"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
